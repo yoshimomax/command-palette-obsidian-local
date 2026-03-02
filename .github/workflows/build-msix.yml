@@ -1,0 +1,75 @@
+# PowerToys Command Palette 拡張（Obsidian）の MSIX をビルド
+# push / PR で main に反映されると実行。Artifacts から .msix をダウンロード可能。
+
+name: Build MSIX
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        configuration: [Release]
+        platform: [x64]
+    runs-on: windows-latest
+    env:
+      Solution_Name: ObsidianCommandPalette.sln
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Create self-signed certificate for MSIX
+        shell: pwsh
+        run: |
+          $cert = New-SelfSignedCertificate `
+            -Subject "CN=ObsidianCommandPalette" `
+            -FriendlyName "Obsidian Command Palette (CI)" `
+            -KeyAlgorithm RSA `
+            -KeyLength 2048 `
+            -CertStoreLocation "Cert:\CurrentUser\My" `
+            -KeyExportPolicy Exportable `
+            -KeyUsage DigitalSignature `
+            -Type CodeSigningCert
+          $password = New-Object System.Security.SecureString
+          Export-PfxCertificate -Cert $cert -FilePath "ObsidianCommandPalette.pfx" -Password $password | Out-Null
+          Remove-Item "Cert:\CurrentUser\My\$($cert.Thumbprint)" -Force
+          echo "CERT_PATH=ObsidianCommandPalette.pfx" >> $env:GITHUB_ENV
+
+      - name: Restore
+        run: msbuild $env:Solution_Name /t:Restore /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }}
+
+      - name: Build MSIX
+        run: |
+          msbuild $env:Solution_Name `
+            /p:Configuration=${{ matrix.configuration }} `
+            /p:Platform=${{ matrix.platform }} `
+            /p:AppxPackageSigningEnabled=true `
+            /p:PackageCertificateKeyFile=${{ github.workspace }}\ObsidianCommandPalette.pfx `
+            /p:UapAppxPackageBuildMode=SideloadOnly `
+            /p:AppxBundle=Never `
+            /p:GenerateAppxPackageOnBuild=true `
+            /p:AppxPackageDir=${{ github.workspace }}\AppPackages
+
+      - name: List build output
+        run: |
+          Get-ChildItem -Path ${{ github.workspace }} -Recurse -Filter "*.msix" -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }
+
+      - name: Upload MSIX
+        uses: actions/upload-artifact@v4
+        with:
+          name: MSIX-x64
+          path: ObsidianCommandPalette/**/*.msix

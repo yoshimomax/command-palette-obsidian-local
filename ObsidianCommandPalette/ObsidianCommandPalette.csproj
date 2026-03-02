@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <RootNamespace>ObsidianCommandPalette</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWinUI>true</UseWinUI>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <ApplicationTitle>Obsidian Command Palette</ApplicationTitle>
+    <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
+    <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+    <Platforms>x64;ARM64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CommandPalette.Extensions" Version="0.8.260206001" />
+    <PackageReference Include="Shmuelie.WinRTServer" Version="2.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\StoreLogo.png" />
+  </ItemGroup>
+</Project>
