@@ -1,5 +1,6 @@
 # PowerToys Command Palette 拡張（Obsidian）の MSIX をビルド
 # push / PR で main に反映されると実行。Artifacts から .msix をダウンロード可能。
+# 前提: Windows 11+ (SDK 22000)。TargetFramework net8.0-windows10.0.22000 に合わせている。
 
 name: Build MSIX
 
