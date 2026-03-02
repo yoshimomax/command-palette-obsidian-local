@@ -1,6 +1,7 @@
 # PowerToys Command Palette 拡張（Obsidian）の MSIX をビルド
 # push / PR で main に反映されると実行。Artifacts から .msix をダウンロード可能。
 # 前提: Windows 11+ (SDK 22000)。TargetFramework net8.0-windows10.0.22000 に合わせている。
+# CsWinRT が Platform.xml を参照するため、windows-latest に 10.0.22000.0 の UAP SDK を追加でインストールする。
 
 name: Build MSIX
 
@@ -24,6 +25,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Install Windows SDK 10.0.22000
+        uses: GuillaumeFalourd/setup-windows10-sdk-action@v2.4
+        with:
+          sdk-version: "22000"
 
       - name: Install .NET 8
         uses: actions/setup-dotnet@v4
